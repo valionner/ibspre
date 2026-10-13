@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  IBS+ — CRÈME DOULEURS ARTICULAIRES
+  Landing page (RTL / Moroccan Darija) — COD (Cash on Delivery) funnel
+  ----------------------------------------------------------------------------
+  Stack   : HTML5 + CSS3 + Vanilla JS (no framework, no build step)
+  Layout  : mobile-first, 480px "phone" shell that expands to 1080px desktop
+  Fonts   : Google Fonts — Cairo + Tajawal (Arabic), with system fallbacks
+  Images  : local WebP assets in ./assets/img (all < 40 KB each)
+  ----------------------------------------------------------------------------
+  QUICK CONFIG: everything editable lives in the CONFIG object in the JS block
+  at the bottom of this file (WhatsApp number, prices, stock, countdown...).
+  ============================================================================
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2D6A4F">
+<title>IBS+ | كريم وجع المفاصل — طبيعي 100% مع الخلص عند التوصيل</title>
+<meta name="description" content="كريم مغربي طبيعي 100% لوجع المفاصل: راحة من أول استعمال. خصم 54% — 229 درهم بدلا 499 درهم، التوصيل 24 ساعة والخلص عند التوصيل، ضمان 30 يوم.">
+<meta property="og:title" content="IBS+ — كريم وجع المفاصل: راحة من أول استعمال">
+<meta property="og:description" content="خصم 54% + عرض 2+1 مجاني. الخلص عند التوصيل وضمان 30 يوم.">
+<meta property="og:type" content="product">
+<meta property="og:image" content="assets/img/product-tube.webp">
+
+<!-- Favicon drawn inline (green tile + IBS+ wordmark) so there is no extra request -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232D6A4F'/%3E%3Ctext x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle'%3EIBS+%3C/text%3E%3C/svg%3E">
+
+<!-- Arabic webfonts (Cairo for headings, Tajawal for body copy) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<!-- Product shot is the LCP element on mobile → preload it -->
+<link rel="preload" as="image" href="assets/img/product-tube.webp">
+
+<!-- Flag JS availability BEFORE first paint, so the scroll-reveal CSS
+     (.js .reveal { opacity: 0 }) never causes a flash for non-JS visitors -->
+<script>document.documentElement.classList.add('js');</script>
+
+<style>
+/* ==========================================================================
+   0. DESIGN TOKENS
+   ========================================================================== */
+:root{
+  --green:        #2D6A4F;   /* primary green (buttons, icons)            */
+  --green-700:    #1B5E37;   /* darker green (button hover, deep areas)   */
+  --green-900:    #0F2A22;   /* footer / final CTA background             */
+  --heading:      #1A3C34;   /* dark green headings                       */
+  --cream:        #FDF6EC;   /* page background                           */
+  --cream-2:      #FAF3E8;   /* alternate band background                 */
+  --cream-3:      #FAF4EC;   /* matches the product photo background      */
+  --white:        #FFFFFF;
+  --gold:         #E88C2A;   /* discount badges                           */
+  --gold-600:     #C9761B;
+  --red:          #D32F2F;   /* pain points / urgency                     */
+  --red-600:      #B71C1C;
+  --star:         #F5A623;
+  --check:        #27AE60;
+  --text:         #333333;
+  --muted:        #888888;
+
+  --radius:       18px;
+  --radius-lg:    26px;
+  --pill:         999px;
+  --shadow-sm:    0 4px 14px rgba(26,60,52,.08);
+  --shadow:       0 12px 30px rgba(26,60,52,.12);
+  --shadow-lg:    0 20px 46px rgba(26,60,52,.18);
+  --ring:         0 0 0 4px rgba(45,106,79,.28);
+
+  --font-head:    "Cairo", "Tajawal", system-ui, "Segoe UI", Tahoma, sans-serif;
+  --font-body:    "Tajawal", "Cairo", system-ui, "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ==========================================================================
+   1. BASE / RESET
+   ========================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+  /* anchor offset so the sticky bottom bar never hides a section title */
+  scroll-padding-bottom:100px;
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.75;
+  direction:rtl;              /* RTL is enforced in CSS as well as the <html> attr */
+  text-align:right;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+h1,h2,h3,h4{font-family:var(--font-head);color:var(--heading);line-height:1.4;margin:0 0 .6em}
+h2{font-size:clamp(1.32rem,5.2vw,1.85rem);font-weight:800;letter-spacing:-.2px}
+p{margin:0 0 1em}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+
+/* Visible keyboard focus everywhere */
+:where(a,button,summary,input,select,textarea):focus-visible{
+  outline:3px solid var(--green);
+  outline-offset:3px;
+  border-radius:8px;
+}
+
+/* Screen-reader-only helper (also used by the "skip to order" link, which
+   becomes visible when focused with the keyboard) */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.sr:focus{
+  position:fixed;top:8px;inset-inline-start:8px;z-index:99;
+  width:auto;height:auto;margin:0;clip:auto;overflow:visible;
+  background:var(--green);color:#fff;padding:10px 16px;border-radius:var(--pill);font-weight:800;
+}
+
+/* ==========================================================================
+   2. LAYOUT SHELL
+   Mobile-first: a 480px centered "phone" column, widened on large screens.
+   ========================================================================== */
+.shell{width:100%;max-width:480px;margin-inline:auto;padding-inline:16px}
+@media (min-width:1024px){
+  .shell{max-width:1080px;padding-inline:24px}
+}
+
+.sec{padding:38px 0}
+.sec--alt{background:var(--cream-2)}
+.sec--white{background:var(--white)}
+
+/* Small centered title + decorative sparkle */
+.sec__head{text-align:center;margin-bottom:22px}
+.sec__spark{display:block;font-size:1.35rem;line-height:1;margin-bottom:6px;filter:drop-shadow(0 3px 6px rgba(232,140,42,.35))}
+.sec__title{margin-bottom:.35em}
+.sec__sub{color:var(--muted);font-size:.95rem;margin:0}
+
+/* ==========================================================================
+   3. BUTTONS
+   ========================================================================== */
+.btn{
+  --btn-bg:var(--green);
+  --btn-fg:#fff;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;
+  padding:16px 20px;
+  background:linear-gradient(180deg,var(--btn-bg),var(--green-700));
+  color:var(--btn-fg);
+  font-family:var(--font-head);
+  font-size:1.06rem;font-weight:800;
+  border:0;border-radius:var(--pill);
+  cursor:pointer;
+  box-shadow:0 10px 22px rgba(45,106,79,.32);
+  transition:transform .22s ease, box-shadow .22s ease, filter .22s ease;
+  text-align:center;
+}
+.btn:hover{transform:translateY(-3px) scale(1.012);box-shadow:0 16px 30px rgba(45,106,79,.42);filter:brightness(1.04)}
+.btn:active{transform:translateY(-1px) scale(.995)}
+.btn--gold{--btn-bg:var(--gold);--btn-fg:#231402;background:linear-gradient(180deg,#F5A243,var(--gold));box-shadow:0 10px 24px rgba(232,140,42,.38)}
+.btn--gold:hover{box-shadow:0 16px 32px rgba(232,140,42,.46)}
+.btn--wa{--btn-bg:#25D366;background:linear-gradient(180deg,#3BE07A,#1EBE5B);box-shadow:0 10px 22px rgba(37,211,102,.32);color:#062e14}
+.btn--lg{padding:18px 22px;font-size:1.14rem}
+.btn--pulse{animation:btnPulse 2.4s ease-in-out infinite}
+@keyframes btnPulse{
+  0%,100%{box-shadow:0 10px 22px rgba(45,106,79,.32)}
+  50%    {box-shadow:0 10px 22px rgba(45,106,79,.32),0 0 0 12px rgba(45,106,79,0)}
+}
+
+/* Inline icon sizes (SVG sprite) */
+.ic{width:1.15em;height:1.15em;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ic--fill{fill:currentColor;stroke:none}
+
+/* ==========================================================================
+   4. SECTION 1 — TOP TRUST BAR
+   ========================================================================== */
+.trustbar{background:linear-gradient(180deg,var(--green),var(--green-700));color:#fff;font-size:.72rem}
+.trustbar__inner{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:6px 14px;padding:7px 12px;text-align:center;
+}
+.trustbar__item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-weight:500}
+.trustbar__item b{font-weight:800}
+.tick{
+  display:inline-grid;place-items:center;flex:0 0 auto;
+  width:15px;height:15px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:#fff;
+}
+.tick svg{width:10px;height:10px}
+@media (min-width:1024px){ .trustbar__inner{font-size:.82rem;gap:6px 30px;padding:9px 24px} }
+
+/* ==========================================================================
+   5. SECTION 2 — HERO
+   ========================================================================== */
+.hero{background:linear-gradient(180deg,var(--white),var(--cream-3));padding:22px 0 34px;position:relative;overflow:hidden}
+/* soft decorative blobs */
+.hero::before,.hero::after{
+  content:"";position:absolute;border-radius:50%;pointer-events:none;
+}
+.hero::before{width:230px;height:230px;background:radial-gradient(circle,rgba(45,106,79,.12),transparent 68%);top:-70px;left:-70px}
+.hero::after{width:260px;height:260px;background:radial-gradient(circle,rgba(232,140,42,.14),transparent 68%);bottom:-90px;right:-90px}
+
+.hero__grid{display:grid;gap:16px;position:relative}
+
+/* Product stage — the tile hugs the tube, and its cream matches the photo
+   background exactly so the image blends in with no visible edges */
+.hero__media{order:2;display:flex;justify-content:center}
+.product-stage{
+  position:relative;
+  width:fit-content;max-width:100%;
+  background:var(--cream-3);
+  border:1px solid rgba(45,106,79,.14);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  padding:12px;
+}
+.product-stage__img{
+  /* definite height → zero layout shift, width follows the intrinsic 800:1679 ratio */
+  height:min(50vh,400px);width:auto;max-width:100%;
+  object-fit:contain;
+}
+/* soft "studio light" glow over the tile */
+.product-stage::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(circle at 50% 6%,rgba(255,255,255,.7),transparent 60%);
+}
+@media (min-width:1024px){
+  .product-stage{padding:16px}
+  .product-stage__img{height:min(62vh,560px)}
+}
+/* rotating discount sticker on the product tile */
+.product-stage__sticker{
+  position:absolute;top:10px;inset-inline-start:10px;
+  display:grid;place-items:center;
+  width:66px;height:66px;border-radius:50%;
+  background:linear-gradient(180deg,#F5A243,var(--gold));
+  color:#22130a;font-family:var(--font-head);font-weight:900;font-size:.92rem;line-height:1.1;
+  box-shadow:0 8px 18px rgba(232,140,42,.42);
+  transform:rotate(-8deg);
+}
+.product-stage__sticker small{display:block;font-size:.55rem;font-weight:700;opacity:.85}
+
+.hero__content{order:1;text-align:center}
+.hero__flag{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(39,174,96,.12);color:var(--check);
+  border:1px solid rgba(39,174,96,.28);
+  border-radius:var(--pill);
+  padding:5px 13px;font-size:.78rem;font-weight:700;margin-bottom:12px;
+}
+.hero h1{font-size:clamp(1.68rem,7.6vw,2.7rem);font-weight:900;color:var(--heading);margin-bottom:.35em}
+.hero__sub{font-size:clamp(.98rem,4.2vw,1.16rem);color:#4a4a4a;margin-bottom:18px}
+.hero__sub b{color:var(--green);font-weight:800}
+
+/* Price box */
+.pricebox{
+  background:var(--white);
+  text-align:center;              /* keeps the price block balanced in both layouts */
+  border:2px dashed rgba(45,106,79,.35);
+  border-radius:var(--radius);
+  padding:16px 16px 14px;
+  box-shadow:var(--shadow-sm);
+  margin-bottom:16px;
+  position:relative;
+}
+.pricebox__old{color:var(--muted);font-size:.95rem;margin:0 0 2px}
+.pricebox__old s{text-decoration-thickness:2px;text-decoration-color:var(--red)}
+.pricebox__new{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:0}
+.pricebox__new .amount{font-family:var(--font-head);font-size:clamp(2.1rem,10vw,3rem);font-weight:900;color:var(--green);line-height:1}
+.pricebox__new .cur{font-family:var(--font-head);font-size:1.05rem;font-weight:800;color:var(--green)}
+.pricebox__save{display:inline-block;margin-top:6px;color:var(--red);font-weight:800;font-size:.85rem}
+.pricebox__note{
+  margin:10px -4px -4px;padding-top:10px;
+  border-top:1px dashed rgba(45,106,79,.22);
+  color:var(--green);font-weight:700;font-size:.86rem;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.badge-off{
+  position:absolute;top:-13px;inset-inline-end:14px;
+  background:linear-gradient(180deg,#F5A243,var(--gold));
+  color:#22130a;font-family:var(--font-head);font-weight:900;font-size:.82rem;
+  padding:5px 13px;border-radius:var(--pill);
+  box-shadow:0 6px 14px rgba(232,140,42,.4);
+}
+.hero__usp{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:7px;text-align:right}
+.hero__usp li{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#444}
+.hero__usp .tick{background:rgba(39,174,96,.14);color:var(--check);width:18px;height:18px}
+.hero__usp .tick svg{width:11px;height:11px}
+
+@media (min-width:1024px){
+  .hero{padding:40px 0 52px}
+  .hero__grid{grid-template-columns:1.05fr .95fr;align-items:center;gap:38px}
+  /* RTL grid: column 1 is the RIGHT side → media (1st in DOM) stays on the right */
+  .hero__media{order:1}
+  .hero__content{order:2;text-align:right}
+  .product-stage{max-width:400px}
+  .pricebox{padding:20px}
+  .hero__usp{flex-direction:row;flex-wrap:wrap;gap:10px 22px}
+}
+
+/* ==========================================================================
+   6. SECTION 3 — PAIN POINTS
+   ========================================================================== */
+.pain{display:grid;gap:12px}
+.pain__card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--white);
+  border:1px solid rgba(211,47,47,.16);
+  border-inline-start:5px solid var(--red);
+  border-radius:var(--radius);
+  padding:11px 13px;
+  box-shadow:var(--shadow-sm);
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.pain__card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.pain__thumb{
+  width:62px;height:62px;flex:0 0 auto;border-radius:14px;
+  overflow:hidden;background:var(--cream-2);
+}
+.pain__thumb img{width:100%;height:100%;object-fit:cover;filter:saturate(.92)}
+.pain__text{flex:1 1 auto;margin:0;font-weight:700;font-size:1rem;color:var(--heading)}
+.pain__text small{display:block;font-weight:500;font-size:.76rem;color:var(--muted);margin-top:2px}
+.pain__x{
+  width:34px;height:34px;flex:0 0 auto;border-radius:50%;
+  background:rgba(211,47,47,.1);color:var(--red);
+  display:grid;place-items:center;
+}
+.pain__x .ic{width:17px;height:17px;stroke-width:2.6}
+.pain__quote{
+  text-align:center;margin:20px 0 0;
+  font-family:var(--font-head);font-weight:800;
+  font-size:clamp(1.02rem,4.6vw,1.28rem);
+  color:var(--gold-600);
+  transform:rotate(-1.2deg);
+  position:relative;
+  padding-bottom:14px;
+}
+/* hand-drawn style underline */
+.pain__quote::after{
+  content:"";position:absolute;inset-inline:auto;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(300px,80%);height:9px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8c46-7 96-8 148-4 50 4 100 2 148-4' fill='none' stroke='%23E88C2A' stroke-width='3' stroke-linecap='round' opacity='.55'/%3E%3C/svg%3E") no-repeat center/100% 100%;
+}
+@media (min-width:1024px){
+  .pain{grid-template-columns:repeat(3,1fr)}
+  .pain__card{flex-direction:column;text-align:center;gap:10px;padding:20px 16px}
+  /* stacked card: ❌ badge on top, then the photo, then the text */
+  .pain__x{order:-2}
+  .pain__thumb{order:-1;width:86px;height:86px;border-radius:50%}
+  .pain__text{font-size:.98rem}
+}
+
+/* ==========================================================================
+   7. SECTION 4 — SOLUTION
+   ========================================================================== */
+.solution{display:grid;gap:18px}
+.solution__media{display:flex;justify-content:center;order:2}
+.solution__body{order:1}
+.benefits{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px}
+.benefits li{
+  display:flex;align-items:center;gap:12px;
+  background:var(--white);
+  border:1px solid rgba(45,106,79,.14);
+  border-radius:var(--radius);
+  padding:12px 14px;font-weight:700;color:var(--heading);
+  box-shadow:var(--shadow-sm);
+  transition:transform .25s ease;
+}
+.benefits li:hover{transform:translateX(-4px)}
+.benefits .emo{
+  width:40px;height:40px;flex:0 0 auto;border-radius:12px;
+  display:grid;place-items:center;font-size:1.15rem;
+  background:rgba(45,106,79,.09);
+}
+.benefits small{display:block;font-weight:500;font-size:.76rem;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px;padding:0;list-style:none}
+.tags li{
+  background:rgba(45,106,79,.1);
+  color:var(--green-700);
+  border:1px solid rgba(45,106,79,.25);
+  border-radius:var(--pill);
+  padding:7px 15px;font-weight:800;font-size:.85rem;
+}
+.tags__label{font-size:.8rem;color:var(--muted);margin:0 0 8px;font-weight:700}
+@media (min-width:1024px){
+  .solution{grid-template-columns:1fr 1fr;align-items:center;gap:40px}
+  .solution__media{order:1}   /* RTL col 1 = right → benefits on the right */
+  .solution__body{order:2}    /* RTL col 2 = left  → product on the left  */
+}
+
+/* ==========================================================================
+   8. SECTION 5 — TESTIMONIALS
+   ========================================================================== */
+.tst{display:grid;gap:14px}
+.tst__card{
+  background:var(--white);
+  border:1px solid rgba(45,106,79,.14);
+  border-radius:var(--radius-lg);
+  padding:22px 18px 18px;
+  text-align:center;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.tst__card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.tst__card::before{
+  content:"”";position:absolute;top:2px;inset-inline-end:16px;
+  font-family:var(--font-head);font-size:3.4rem;color:rgba(45,106,79,.13);line-height:1;
+}
+.tst__avatar{
+  width:76px;height:76px;margin:0 auto 10px;border-radius:50%;
+  overflow:hidden;border:3px solid rgba(45,106,79,.2);box-shadow:0 6px 16px rgba(26,60,52,.14);
+}
+.tst__avatar img{width:100%;height:100%;object-fit:cover}
+.tst__name{font-family:var(--font-head);font-weight:800;color:var(--heading);font-size:1rem;margin:0}
+.tst__city{color:var(--muted);font-size:.8rem;font-weight:700;margin:0 0 8px}
+.stars{display:flex;justify-content:center;gap:2px;color:var(--star);margin-bottom:10px}
+.stars .ic{width:17px;height:17px}
+.tst__text{margin:0 0 12px;font-size:.95rem;color:#3f3f3f}
+.verified{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--check);font-weight:800;font-size:.8rem;
+  background:rgba(39,174,96,.1);border-radius:var(--pill);padding:4px 12px;
+}
+.verified .tick{background:rgba(39,174,96,.18);color:var(--check)}
+.tst__proof{
+  text-align:center;margin:20px 0 0;font-weight:700;color:var(--green);
+  background:rgba(45,106,79,.08);border-radius:var(--pill);
+  padding:9px 16px;font-size:.88rem;display:inline-block;
+}
+.tst__proofwrap{text-align:center}
+@media (min-width:1024px){ .tst{grid-template-columns:repeat(3,1fr)} }
+
+/* ==========================================================================
+   9. SECTION 6 — SPECIAL OFFER
+   ========================================================================== */
+.offer__card{
+  background:var(--white);
+  border:2px solid var(--green);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);
+  padding:24px 18px;
+  position:relative;
+  overflow:hidden;
+}
+.offer__card::after{
+  content:"";position:absolute;inset:-60% -30% auto auto;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(232,140,42,.14),transparent 70%);pointer-events:none;
+}
+.offer__grid{display:grid;gap:20px;margin-bottom:18px;position:relative;z-index:1}
+
+/* Countdown to midnight */
+.countdown{display:flex;justify-content:center;align-items:center;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+.countdown__label{font-weight:700;color:var(--red);font-size:.88rem}
+.countdown__box{
+  min-width:52px;padding:6px 8px;border-radius:12px;
+  background:var(--heading);color:#fff;text-align:center;
+  font-family:var(--font-head);font-weight:800;font-size:1.05rem;line-height:1.2;
+}
+.countdown__box small{display:block;font-size:.6rem;font-weight:600;opacity:.75;font-family:var(--font-body)}
+.countdown__sep{color:var(--heading);font-weight:900}
+
+.offer__price{text-align:center;background:var(--cream-2);border-radius:var(--radius);padding:16px 14px}
+.offer__price .old{margin:0;color:var(--muted);font-size:1rem}
+.offer__price .old s{text-decoration-color:var(--red);text-decoration-thickness:2px}
+.offer__price .new{
+  font-family:var(--font-head);font-weight:900;color:var(--green);
+  font-size:clamp(2.4rem,12vw,3.4rem);line-height:1;margin:6px 0 2px;
+}
+.offer__price .new span{font-size:1.1rem}
+.badge-off--inline{
+  position:static;display:inline-block;margin:6px 0;
+}
+.offer__save{color:var(--red);font-weight:800;margin:8px 0 0;font-size:.92rem}
+.offer__bonus{
+  margin:12px 0 0;padding:10px;border-radius:14px;
+  background:linear-gradient(180deg,#FFF3E0,#FFE7C6);
+  color:#8a4b06;font-weight:800;font-size:.9rem;
+  border:1px dashed var(--gold);
+}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.checks li{display:flex;align-items:flex-start;gap:9px;font-size:.94rem;font-weight:600}
+.checks .tick{background:rgba(39,174,96,.14);color:var(--check);width:19px;height:19px;margin-top:3px}
+.checks .tick svg{width:11px;height:11px}
+
+/* Urgency / scarcity bar */
+.scarcity{
+  margin-top:14px;background:linear-gradient(180deg,#E4443B,var(--red-600));
+  color:#fff;border-radius:var(--pill);padding:11px 16px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-weight:800;font-size:.95rem;
+  animation:pulseRed 1.9s ease-in-out infinite;
+}
+.scarcity b{font-size:1.18rem;display:inline-block;min-width:2ch;text-align:center}
+.scarcity b.bump{animation:bump .5s ease}
+@keyframes pulseRed{
+  0%,100%{box-shadow:0 8px 20px rgba(211,47,47,.28)}
+  50%    {box-shadow:0 8px 20px rgba(211,47,47,.28),0 0 0 12px rgba(211,47,47,0)}
+}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.stockbar{height:8px;border-radius:var(--pill);background:rgba(211,47,47,.16);margin-top:9px;overflow:hidden}
+.stockbar__fill{
+  height:100%;width:94%;border-radius:var(--pill);
+  background:linear-gradient(90deg,#E4443B,var(--gold));
+  transition:width .8s ease;
+}
+.offer__foot{text-align:center;color:var(--muted);font-size:.78rem;margin:12px 0 0}
+
+@media (min-width:1024px){
+  .offer__card{padding:32px 34px}
+  /* RTL grid: col 1 = right (checks), col 2 = left (price) — spec: price on the left */
+  .offer__grid{grid-template-columns:1.1fr .9fr;align-items:center;gap:34px}
+  .offer__checks{grid-column:1}
+  .offer__price{grid-column:2;padding:24px 20px}
+}
+
+/* ==========================================================================
+   10. ORDER FORM
+   ========================================================================== */
+.order{background:linear-gradient(180deg,var(--cream),#F4EADA)}
+.order__card{
+  background:var(--white);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);border:1px solid rgba(45,106,79,.14);
+  padding:22px 18px;
+}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:800;color:var(--heading);font-size:.92rem;margin-bottom:6px}
+.field .hint{font-weight:500;color:var(--muted);font-size:.76rem}
+.field input,.field select{
+  width:100%;padding:14px 15px;font-size:1rem;font-family:inherit;color:var(--text);
+  background:var(--cream-2);
+  border:2px solid transparent;border-radius:14px;
+  transition:border-color .2s ease, background .2s ease;
+}
+.field input::placeholder{color:#b3aca3}
+.field input:focus,.field select:focus{outline:none;background:#fff;border-color:var(--green)}
+.field input[aria-invalid="true"]{border-color:var(--red);background:#FDF0F0}
+.err{display:none;color:var(--red);font-size:.78rem;font-weight:700;margin:5px 2px 0}
+.err.show{display:block}
+.form__summary{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--cream-2);border-radius:14px;padding:11px 14px;margin:4px 0 16px;
+  font-weight:700;font-size:.88rem;
+}
+.form__summary b{color:var(--green);font-family:var(--font-head);font-size:1.05rem}
+.form__legal{text-align:center;color:var(--muted);font-size:.74rem;margin:12px 0 0}
+.success{
+  display:none;text-align:center;padding:8px 4px;
+}
+.success.show{display:block;animation:pop .4s ease}
+.success__ic{
+  width:66px;height:66px;margin:0 auto 12px;border-radius:50%;
+  background:rgba(39,174,96,.14);color:var(--check);display:grid;place-items:center;
+}
+.success__ic svg{width:32px;height:32px;stroke-width:2.6}
+.success__recap{
+  text-align:right;background:var(--cream-2);border-radius:14px;padding:12px 15px;margin:14px 0;
+  font-size:.9rem;
+}
+.success__recap div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.success__recap span:first-child{color:var(--muted)}
+.success__recap span:last-child{font-weight:800;color:var(--heading)}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+
+/* ==========================================================================
+   11. SECTION 7 — FAQ (accordion)
+   ========================================================================== */
+.faq__list{display:grid;gap:10px}
+.faq{
+  background:var(--white);
+  border:1px solid rgba(45,106,79,.16);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+  transition:box-shadow .25s ease, border-color .25s ease;
+}
+.faq[open]{border-color:rgba(45,106,79,.4);box-shadow:var(--shadow)}
+.faq summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;gap:11px;
+  padding:15px 16px;
+  font-family:var(--font-head);font-weight:800;color:var(--heading);font-size:.98rem;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::marker{content:""}
+.faq__q{flex:1 1 auto}
+.faq__chev{
+  width:28px;height:28px;flex:0 0 auto;border-radius:50%;
+  background:rgba(45,106,79,.1);color:var(--green);
+  display:grid;place-items:center;transition:transform .28s ease, background .28s ease;
+}
+.faq[open] .faq__chev{transform:rotate(180deg);background:var(--green);color:#fff}
+.faq__a{padding:0 16px 16px;color:#4b4b4b;font-size:.93rem;animation:fadeSlide .3s ease}
+.faq__a p{margin:0}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (min-width:1024px){ .faq__list{grid-template-columns:1fr 1fr;gap:12px} }
+
+/* ==========================================================================
+   12. SECTION 8 — FINAL CTA
+   ========================================================================== */
+.final{background:linear-gradient(160deg,var(--green-900),#14493a 55%,#123a2f);color:#fff;padding:44px 0}
+.final h2{color:#fff;text-align:center;font-size:clamp(1.5rem,6.4vw,2.3rem);font-weight:900;margin-bottom:16px}
+.final__trust{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;margin-bottom:22px}
+.final__trust span{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--pill);padding:8px 14px;font-size:.84rem;font-weight:700;
+}
+.final__price{text-align:center;margin-bottom:20px}
+.final__price .new{
+  font-family:var(--font-head);font-weight:900;color:#FFC978;
+  font-size:clamp(2.5rem,13vw,3.6rem);line-height:1;display:inline-block;margin-inline-end:10px;
+}
+.final__price .new span{font-size:1.1rem}
+.final__price .old{color:rgba(255,255,255,.62);font-size:1.12rem}
+.final__price .old s{text-decoration-color:var(--gold);text-decoration-thickness:2px}
+.final__note{text-align:center;color:rgba(255,255,255,.72);font-size:.8rem;margin:12px 0 0}
+@media (min-width:1024px){ .final__inner{max-width:640px;margin-inline:auto} }
+
+/* ==========================================================================
+   13. SECTION 9 — FOOTER
+   ========================================================================== */
+.footer{background:#08150F;color:#fff;padding:28px 0 118px}
+.footer__inner{text-align:center}
+.footer__brand{
+  font-family:var(--font-head);font-weight:900;font-size:1.25rem;color:#fff;margin:0 0 2px;
+}
+.footer__tag{color:rgba(255,255,255,.66);font-size:.86rem;margin:0 0 14px}
+.footer__badges{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:16px}
+.footer__badges span{
+  display:inline-flex;align-items:center;gap:6px;font-size:.76rem;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  border-radius:var(--pill);padding:6px 12px;
+}
+.footer__links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-bottom:14px;font-size:.84rem}
+.footer__links a{border-bottom:1px solid rgba(255,255,255,.28);padding-bottom:1px}
+.footer__links a:hover{border-color:var(--gold);color:var(--gold)}
+.footer__legal{color:rgba(255,255,255,.42);font-size:.7rem;line-height:1.9;margin:0}
+.footer__legal a{color:rgba(255,255,255,.6)}
+@media (min-width:1024px){ .footer{padding-bottom:34px} }
+
+/* ==========================================================================
+   14. FLOATING WHATSAPP BUTTON + STICKY MOBILE CTA BAR
+   ========================================================================== */
+.wa-fab{
+  position:fixed;z-index:60;
+  /* "bottom-right of the screen" = physical right, independent of RTL */
+  right:14px;bottom:88px;
+  width:56px;height:56px;border-radius:50%;
+  background:#25D366;color:#fff;
+  display:grid;place-items:center;
+  box-shadow:0 10px 26px rgba(37,211,102,.45);
+  transition:transform .22s ease, box-shadow .22s ease;
+}
+.wa-fab:hover{transform:scale(1.08);box-shadow:0 14px 30px rgba(37,211,102,.55)}
+.wa-fab .ic{width:30px;height:30px}
+.wa-fab::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid rgba(37,211,102,.5);animation:waRing 2.6s ease-out infinite;
+}
+@keyframes waRing{
+  0%{transform:scale(.9);opacity:.8}
+  70%{transform:scale(1.35);opacity:0}
+  100%{opacity:0}
+}
+
+.stickybar{
+  position:fixed;z-index:55;bottom:0;inset-inline:0;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+  border-top:1px solid rgba(45,106,79,.16);
+  box-shadow:0 -8px 26px rgba(26,60,52,.14);
+  padding:9px 12px calc(9px + env(safe-area-inset-bottom,0px));
+  transition:transform .35s ease;
+}
+.stickybar__inner{
+  max-width:480px;margin-inline:auto;
+  display:flex;align-items:center;gap:10px;
+}
+.stickybar__prices{flex:0 0 auto;line-height:1.15}
+.stickybar__prices .new{font-family:var(--font-head);font-weight:900;color:var(--green);font-size:1.22rem;display:block}
+.stickybar__prices .old{color:var(--muted);font-size:.74rem}
+.stickybar__prices .old s{text-decoration-color:var(--red)}
+.stickybar .btn{flex:1 1 auto;padding:13px 14px;font-size:.98rem;box-shadow:0 8px 18px rgba(45,106,79,.3)}
+body.is-order-visible .stickybar{transform:translateY(130%)}
+@media (min-width:1024px){
+  .stickybar{display:none}
+  .wa-fab{bottom:24px}
+}
+
+/* ==========================================================================
+   15. SCROLL REVEAL ANIMATION
+   (.js is added by an inline script; without JS everything stays visible)
+   ========================================================================== */
+.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease, transform .65s cubic-bezier(.2,.7,.3,1)}
+.js .reveal.in{opacity:1;transform:none}
+.js .reveal.d1{transition-delay:.08s}
+.js .reveal.d2{transition-delay:.16s}
+.js .reveal.d3{transition-delay:.24s}
+
+/* ==========================================================================
+   16. REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  .js .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<a class="sr" href="#order">تخطّى للطلب</a>
+
+<!-- ==========================================================================
+     SVG ICON SPRITE (referenced with <use href="#id">)
+     ========================================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6.5 9.4 17 4 11.7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24">
+    <path d="M3 4h2.1l2.3 10.9A2.2 2.2 0 0 0 9.55 16.6h8.6a2.2 2.2 0 0 0 2.15-1.74L22 7.4H6.2"/>
+    <circle cx="9.8" cy="20.2" r="1.5"/><circle cx="17.9" cy="20.2" r="1.5"/>
+  </symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.3-2.9 7.9-7 9-4.1-1.1-7-4.7-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 7h10v9H2zM12 10h4.5l3.5 3v3h-8z"/><circle cx="6.5" cy="18.5" r="1.6"/><circle cx="16.5" cy="18.5" r="1.6"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.95-4.8 4.6 1.15 6.5L12 17.6l-5.85 3.05L7.3 14.15 2.5 9.55l6.6-.95z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.35-.35.52-.53.18-.17.24-.3.35-.5.12-.2.06-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.7.3 1.26.49 1.7.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.42.25-.69.25-1.29.18-1.41-.08-.12-.28-.2-.57-.35M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.89-9.88 9.89m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.17-3.48-8.42z"/></symbol>
+</svg>
+
+<!-- ==========================================================================
+     SECTION 1 — TOP TRUST BAR
+     ========================================================================== -->
+<header class="trustbar">
+  <div class="trustbar__inner">
+    <!-- NOTE: the "344 يوم" mention is kept exactly as provided in the brief.
+         Change/remove it here if it should read differently. -->
+    <span class="trustbar__item">
+      <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+      الخلص عند التوصيل — <b>344 يوم</b>
+    </span>
+    <span class="trustbar__item">
+      <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+      توصيل <b>24 ساعة</b>
+    </span>
+    <span class="trustbar__item">
+      <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+      ضمان <b>30 يوم</b>
+    </span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ========================================================================
+       SECTION 2 — HERO
+       ======================================================================== -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="shell hero__grid">
+
+      <!-- Product visual (1st in DOM → RIGHT side in RTL) -->
+      <div class="hero__media reveal">
+        <figure class="product-stage">
+          <span class="product-stage__sticker" aria-hidden="true">خصم<small data-discount-short>54%</small></span> 
+          <img class="product-stage__img"
+               src="assets/img/product-tube.webp"
+               width="800" height="1679" decoding="async" fetchpriority="high"
+               alt="أنبوب كريم IBS+ CRÈME DOULEURS ARTICULAIRES بالأبيض والأخضر">
+        </figure>
+      </div>
+
+      <!-- Copy (2nd in DOM → LEFT side in RTL) -->
+      <div class="hero__content reveal d1">
+        <span class="hero__flag">🇲🇦 صُنع فالمغرب — وصفة تقليدية</span>
+
+        <h1 id="hero-title">وجع المفاصل كيقتل حياتك؟</h1>
+        <p class="hero__sub"><b>كريم مغربي طبيعي 100%</b> — راحة من أول استعمال</p>
+
+        <!-- Price box -->
+        <div class="pricebox">
+          <span class="badge-off" data-discount>خصم 54%</span>
+          <p class="pricebox__old"><s data-old-price>499 درهم</s></p>
+          <p class="pricebox__new">
+            <span class="amount" data-price>229</span>
+            <span class="cur">درهم</span>
+          </p>
+          <span class="pricebox__save"><span data-save>كتوفر 270 درهم</span> اليوم</span>
+          <p class="pricebox__note">
+            <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+            الخلص عند التوصيل — ما تنخافش دابا
+          </p>
+        </div>
+
+        <button type="button" class="btn btn--lg btn--pulse" data-scroll="#order"
+                aria-label="طلب دابا — الخلص عند التوصيل">
+          <svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg>
+          طلب دابا — الخلص عند التوصيل
+        </button>
+
+        <ul class="hero__usp">
+          <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> توصيل مجاني لجميع المدن</li>
+          <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> ضمان 30 يوم — فلوسك ترجع</li>
+          <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> بلا مواد كيميائية</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 3 — PAIN POINTS
+       ======================================================================== -->
+  <section class="sec sec--alt" aria-labelledby="pain-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">✨</span>
+        <h2 class="sec__title" id="pain-title">واش كتعرفي هاد الإحساس؟</h2>
+      </div>
+
+      <div class="pain">
+        <!-- Card 1 -->
+        <article class="pain__card reveal">
+          <p class="pain__text">
+            ما كتقدرش تسجدي بلا وجع
+            <small>الركبة كتوجع فالسجود والقيام</small>
+          </p>
+          <span class="pain__thumb">
+            <img src="assets/img/pain-1.webp" width="480" height="480" loading="lazy" decoding="async"
+                 alt="مرأة كتصلي وكتشد ركبتها من الوجع">
+          </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="pain__card reveal d1">
+          <p class="pain__text">
+            ما كتقدرش تلعبي مع ولادك
+            <small>كتتفرجي عليهم بدل ما تلعبي معاهم</small>
+          </p>
+          <span class="pain__thumb">
+            <img src="assets/img/pain-2.webp" width="480" height="480" loading="lazy" decoding="async"
+                 alt="أم كتحاول تلعب مع ولادها وكتحس بوجع الظهر">
+          </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="pain__card reveal d2">
+          <p class="pain__text">
+            كل نهار كتعاني — حتى مع الدوا
+            <small>الحبوب كتسكّت الوجع شوية وكيرجع</small>
+          </p>
+          <span class="pain__thumb">
+            <img src="assets/img/pain-3.webp" width="480" height="480" loading="lazy" decoding="async"
+                 alt="راجل تعبان حاطط الأدوية قدامه على الطبلة">
+          </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
+        </article>
+      </div>
+
+      <p class="pain__quote reveal d2">جربتي كلشي... ولكن الوجع باقي كيرجع.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 4 — SOLUTION
+       ======================================================================== -->
+  <section class="sec sec--white" aria-labelledby="sol-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">🌿</span>
+        <h2 class="sec__title" id="sol-title">هادي هي الحل اللي كنتي كتقلبي عليه</h2>
+      </div>
+
+      <div class="solution">
+        <!-- Benefits (1st in DOM → RIGHT in RTL) -->
+        <div class="solution__body reveal">
+          <ul class="benefits">
+            <li>
+              <span class="emo" aria-hidden="true">🔥</span>
+              <span>راحة من أول استعمال <small>حسّان فوري فمنطقة الوجع</small></span>
+            </li>
+            <li>
+              <span class="emo" aria-hidden="true">⬇️</span>
+              <span>كيدخل للعمق — ماشي غير على السطح <small>كيوصّل للمفصل والعضلة</small></span>
+            </li>
+            <li>
+              <span class="emo" aria-hidden="true">🌿</span>
+              <span>طبيعي 100% — بلا مواد كيميائية <small>مكونات طبيعية ومصادق عليها</small></span>
+            </li>
+          </ul>
+
+          <p class="tags__label">المكونات الفعالة:</p>
+          <ul class="tags">
+            <li>غلوكوزامين</li>
+            <li>أرنيكا</li>
+            <li>LSSM</li>
+            <li>فلفل حار</li>
+          </ul>
+        </div>
+
+        <!-- Product visual (2nd in DOM → LEFT in RTL) -->
+        <div class="solution__media reveal d1">
+          <figure class="product-stage">
+            <img class="product-stage__img"
+                 src="assets/img/product-tube.webp"
+                 width="800" height="1679" loading="lazy" decoding="async"
+                 alt="كريم IBS+ توأم الوجع المفصلية — العبوة الكاملة">
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 5 — TESTIMONIALS
+       ======================================================================== -->
+  <section class="sec sec--alt" aria-labelledby="tst-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">💬</span>
+        <h2 class="sec__title" id="tst-title">آلاف المغاربة جربو وحسو بالفرق</h2>
+        <p class="sec__sub">نتائج حقيقية من زبناء حقيقيين 🇲🇦</p>
+      </div>
+
+      <div class="tst">
+        <!-- 1st in DOM → RIGHT column in RTL -->
+        <article class="tst__card reveal">
+          <div class="tst__avatar">
+            <img src="assets/img/avatar-1.webp" width="240" height="240" loading="lazy" decoding="async"
+                 alt="خديجة من طنجة">
+          </div>
+          <p class="tst__name">خديجة</p>
+          <p class="tst__city">طنجة</p>
+          <div class="stars" role="img" aria-label="5 نجوم من 5">
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+          </div>
+          <p class="tst__text">جربت بزاف ديال الحوايج. هادا هو اللي عطاني نتيجة حقيقية.</p>
+          <span class="verified">
+            <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+            زبون حقيقي
+          </span>
+        </article>
+
+        <article class="tst__card reveal d1">
+          <div class="tst__avatar">
+            <img src="assets/img/avatar-2.webp" width="240" height="240" loading="lazy" decoding="async"
+                 alt="محمد من مراكش">
+          </div>
+          <p class="tst__name">محمد</p>
+          <p class="tst__city">مراكش</p>
+          <div class="stars" role="img" aria-label="5 نجوم من 5">
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+          </div>
+          <p class="tst__text">كنت كنعاني من وجع الظهر سنين. هاد الكريم هو الوحيد اللي نفعني.</p>
+          <span class="verified">
+            <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+            زبون حقيقي
+          </span>
+        </article>
+
+        <article class="tst__card reveal d2">
+          <div class="tst__avatar">
+            <img src="assets/img/avatar-3.webp" width="240" height="240" loading="lazy" decoding="async"
+                 alt="فاطمة من الدار البيضاء">
+          </div>
+          <p class="tst__name">فاطمة</p>
+          <p class="tst__city">الدار البيضاء</p>
+          <div class="stars" role="img" aria-label="5 نجوم من 5">
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-star"/></svg>
+          </div>
+          <p class="tst__text">من بعد أسبوع، الوجع خف بزاف. بديلا كنعملي بلا مشاكل.</p>
+          <span class="verified">
+            <span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span>
+            زبون حقيقي
+          </span>
+        </article>
+      </div>
+
+      <div class="tst__proofwrap reveal">
+        <p class="tst__proof">⭐ 4.8/5 — من أكثر من 2.400 طلب فالمغرب</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 6 — SPECIAL OFFER (today only)
+       ======================================================================== -->
+  <section class="sec" id="offer" aria-labelledby="offer-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">🎁</span>
+        <h2 class="sec__title" id="offer-title">عرض خاص — غير اليوم</h2>
+      </div>
+
+      <div class="offer__card reveal">
+        <!-- live countdown to midnight -->
+        <div class="countdown" id="countdown">
+          <span class="countdown__label">⚠️ العرض كيسالي فـ:</span>
+          <span class="countdown__box"><span id="cd-h">00</span><small>ساعة</small></span>
+          <span class="countdown__sep">:</span>
+          <span class="countdown__box"><span id="cd-m">00</span><small>دقيقة</small></span>
+          <span class="countdown__sep">:</span>
+          <span class="countdown__box"><span id="cd-s">00</span><small>ثانية</small></span>
+        </div>
+
+        <div class="offer__grid">
+          <!-- Checklist (1st in DOM → RIGHT column on desktop) -->
+          <div class="offer__checks">
+            <ul class="checks">
+              <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> التوصيل مجاني لجميع المدن</li>
+              <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> الخلص عند التوصيل</li>
+              <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> ضمان 30 يوم — فلوسك ترجع</li>
+              <li><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span> دعم على WhatsApp</li>
+            </ul>
+          </div>
+
+          <!-- Price area (2nd in DOM → LEFT column on desktop) -->
+          <div class="offer__price">
+            <p class="old"><s data-old-price>499 درهم</s></p>
+            <p class="new"><b data-price>229</b><span> درهم</span></p>
+            <span class="badge-off badge-off--inline" data-discount>خصم 54%</span>
+            <p class="offer__save" data-save>كتوفر 270 درهم</p>
+            <p class="offer__bonus">🎉 <span data-pack>عرض 2+1 مجاني</span> — كريمين + واحد مجاني</p>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn--lg" data-scroll="#order"
+                aria-label="طلب دابا — قبل ما يخلص العرض">
+          <svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg>
+          طلب دابا — قبل ما يخلص العرض
+        </button>
+
+        <!-- Urgency / scarcity -->
+        <div class="scarcity" id="scarcity" role="status" aria-live="polite">
+          <span aria-hidden="true">🔥</span>
+          باقي غير <b id="stock">47</b> كمية
+        </div>
+        <div class="stockbar" role="presentation"><div class="stockbar__fill" id="stockbar"></div></div>
+
+        <p class="offer__foot">🚚 كنوصلو فـ 24-48 ساعة • 💰 كتخلص ملي توصلك السلعة</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       ORDER FORM — target of every CTA button
+       ======================================================================== -->
+  <section class="sec order" id="order" aria-labelledby="order-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">📝</span>
+        <h2 class="sec__title" id="order-title">أكمل الطلب ديالك</h2>
+        <p class="sec__sub">عمّر المعلومات وغادي نتصلو بيك باش نأكدو الطلب</p>
+      </div>
+
+      <div class="order__card reveal">
+        <!-- FORM -->
+        <form id="order-form" novalidate autocomplete="on">
+          <div class="field">
+            <label for="f-name">الاسم الكامل</label>
+            <input id="f-name" name="name" type="text" autocomplete="name"
+                   placeholder="مثال: خديجة العلمي" required
+                   aria-describedby="e-name">
+            <p class="err" id="e-name" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-phone">رقم الهاتف <span class="hint">(غادي نتصلو بيك عليه)</span></label>
+            <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+                   placeholder="06 12 34 56 78" required
+                   aria-describedby="e-phone">
+            <p class="err" id="e-phone" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="f-city">المدينة</label>
+            <input id="f-city" name="city" type="text" autocomplete="address-level2"
+                   placeholder="مثال: الدار البيضاء" required list="cities"
+                   aria-describedby="e-city">
+            <datalist id="cities">
+              <option value="الدار البيضاء"></option><option value="الرباط"></option>
+              <option value="مراكش"></option><option value="فاس"></option>
+              <option value="طنجة"></option><option value="أكادير"></option>
+              <option value="مكناس"></option><option value="وجدة"></option>
+              <option value="تطوان"></option><option value="القنيطرة"></option>
+              <option value="سلا"></option><option value="الجديدة"></option>
+            </datalist>
+            <p class="err" id="e-city" role="alert"></p>
+          </div>
+
+          <div class="form__summary">
+            <span>الطلب: <b>IBS+ كريم المفاصل</b></span>
+            <span>2+1 مجاني 🎁</span>
+            <b class="js-price">229 درهم</b>
+          </div>
+
+          <button type="submit" class="btn btn--lg">
+            <svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>
+            تأكيد الطلب
+          </button>
+
+          <p class="form__legal">🔒 المعلومات ديالك محفوظة وكنستعملوها غير لتوصيل الطلب.</p>
+        </form>
+
+        <!-- SUCCESS STATE (revealed by JS after a valid submit) -->
+        <div class="success" id="success" role="status" aria-live="polite">
+          <div class="success__ic" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></div>
+          <h3>🎉 مبروك! تسجّل الطلب ديالك</h3>
+          <p>غادي نتصلو بيك فـ <b>24 ساعة</b> باش نأكدو التفاصيل.</p>
+
+          <div class="success__recap">
+            <div><span>الاسم</span><span id="r-name">—</span></div>
+            <div><span>الهاتف</span><span id="r-phone">—</span></div>
+            <div><span>المدينة</span><span id="r-city">—</span></div>
+            <div><span>العرض</span><span>2+1 مجاني</span></div>
+            <div><span>المجموع</span><span class="js-price">229 درهم</span></div>
+            <div><span>الخلاص</span><span>عند التوصيل</span></div>
+          </div>
+
+          <a class="btn btn--wa" id="success-wa" href="#" target="_blank" rel="noopener">
+            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-wa"/></svg>
+            أكّد على WhatsApp
+          </a>
+          <p class="form__legal" style="margin-top:14px">تحتاج تبدل شي معلومة؟ <a href="#" id="edit-order" style="color:var(--green);font-weight:800">رجع للفورم</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 7 — FAQ
+       ======================================================================== -->
+  <section class="sec sec--alt" aria-labelledby="faq-title">
+    <div class="shell">
+      <div class="sec__head reveal">
+        <span class="sec__spark" aria-hidden="true">❓</span>
+        <h2 class="sec__title" id="faq-title">أسئلة كترجع برّاف</h2>
+      </div>
+
+      <div class="faq__list" id="faq">
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">شحال من مرة خاصني نستعمل؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>مرتين فاليوم — الصباح والمسا.</p></div>
+        </details>
+
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">واش هاد الكريم كينفع لكل أنواع الوجع؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>ايوا، كينفع لوجع الركب، الظهر، الكتف، اليدين، والأصابع.</p></div>
+        </details>
+
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">كيفاش نخلص؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>الخلص عند التوصيل — تخلص ملي توصلك الساعة.</p></div>
+        </details>
+
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">واش كاين شي أعراض جانبية؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>لا، طبيعي 100%. بلا مواد كيميائية.</p></div>
+        </details>
+
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">شحال كياخد التوصيل؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>24-48 ساعة دالمدن الكبيرة.</p></div>
+        </details>
+
+        <details class="faq reveal">
+          <summary>
+            <span class="faq__q">واش كاين ضمان؟</span>
+            <span class="faq__chev" aria-hidden="true"><svg class="ic"><use href="#i-chevron"/></svg></span>
+          </summary>
+          <div class="faq__a"><p>ايوا، ضمان 30 يوم — فلوسك ترجع.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       SECTION 8 — FINAL CTA
+       ======================================================================== -->
+  <section class="final" aria-labelledby="final-title">
+    <div class="shell final__inner">
+      <h2 id="final-title" class="reveal">ما تخليش الوجع يوقف حياتك</h2>
+
+      <div class="final__trust reveal d1">
+        <span>🚚 توصيل 48 ساعة</span>
+        <span>💰 COD — الخلص عند التوصيل</span>
+        <span>🔒 ضمان 30 يوم</span>
+      </div>
+
+      <div class="final__price reveal d2">
+        <span class="new"><b data-price>229</b><span> درهم</span></span>
+        <span class="old"><s data-old-price>499 درهم</s></span>
+      </div>
+
+      <button type="button" class="btn btn--lg btn--gold" data-scroll="#order"
+              aria-label="طلب دابا — والخلص عند التوصيل">
+        <svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg>
+        طلب دابا — والخلص عند التوصيل
+      </button>
+
+      <p class="final__note">عرض محدود • التوصيل مجاني • كتخلص ملي توصلك السلعة</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==========================================================================
+     SECTION 9 — FOOTER
+     ========================================================================== -->
+<footer class="footer">
+  <div class="shell footer__inner">
+    <p class="footer__brand">IBS+</p>
+    <p class="footer__tag">كريم المفاصل ن°1 فالمغرب</p>
+
+    <div class="footer__badges">
+      <span>🛡️ ONSSA — منتج مصادق عليه</span>
+      <span>💰 الخلص عند التوصيل</span>
+      <span>✅ طبيعي 100%</span>
+    </div>
+
+    <div class="footer__links">
+      <a class="js-wa" href="#" target="_blank" rel="noopener">دعم فوري على WhatsApp</a>
+      <!-- Phone digits are filled from CONFIG.whatsappNumber by the JS block -->
+      <a id="support-phone" href="tel:+212600000000" dir="ltr">+212&nbsp;6&nbsp;00&nbsp;00&nbsp;00&nbsp;00</a>
+      <a href="#order">طلب دابا</a>
+    </div>
+
+    <p class="footer__legal">
+      © <span id="year">2026</span> IBS+ — جميع الحقوق محفوظة.<br>
+      ⚠️ هاد المنتج ماشي بديل على الاستشارة الطبية — إلا كانت الحالة خطيرة، استشر الطبيب.
+    </p>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp button (bottom-right) -->
+<a class="wa-fab js-wa" href="#" target="_blank" rel="noopener" aria-label="تواصل معنا على WhatsApp">
+  <svg class="ic ic--fill" aria-hidden="true"><use href="#i-wa"/></svg>
+</a>
+
+<!-- Sticky mobile CTA bar -->
+<div class="stickybar" id="stickybar">
+  <div class="stickybar__inner">
+    <div class="stickybar__prices">
+      <span class="new js-price">229 درهم</span>
+      <span class="old"><s data-old-price>499 درهم</s></span>
+    </div>
+    <button type="button" class="btn" data-scroll="#order" aria-label="طلب دابا">
+      <svg class="ic" aria-hidden="true"><use href="#i-cart"/></svg>
+      طلب دابا
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   IBS+ LANDING PAGE — JAVASCRIPT
+   ----------------------------------------------------------------------------
+   Modules (all vanilla, no dependencies):
+     1. CONFIG                     — single place for every editable value
+     1b. Price sync                — pushes CONFIG prices/discount into the page
+     2. Scroll reveal              — IntersectionObserver fade-in
+     3. Smooth scroll CTAs         — every [data-scroll] button/trigger
+     4. Scarcity counter           — 47 → 12 with pulse + progress bar
+     5. Countdown to midnight      — offer deadline
+     6. FAQ accordion              — one panel open at a time
+     7. Sticky bar visibility      — hides while the order form is on screen
+     8. Order form                 — validation, success state, WhatsApp handoff
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ 1. CONFIG */
+  var CONFIG = {
+    // WhatsApp number in international format, digits only (no +, no spaces).
+    // ⚠️ Replace the placeholder with the real business number.
+    whatsappNumber: '212XXXXXXXXX',
+
+    price: 229,
+    oldPrice: 499,
+    currency: 'درهم',
+    packLabel: 'عرض 2+1 مجاني',
+
+    stock: { start: 47, min: 12, firstDelay: 18000, every: [28000, 62000] },
+
+    // Guarded: some in-app webviews / old browsers ship without matchMedia
+    reduceMotion: !!(window.matchMedia &&
+                     window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  };
+
+  var $  = function (sel, ctx) { return (ctx || document).querySelector(sel); };
+  var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); };
+
+  /** Build a wa.me deep link with a pre-filled message. */
+  function waLink(message) {
+    return 'https://wa.me/' + CONFIG.whatsappNumber +
+           (message ? '?text=' + encodeURIComponent(message) : '');
+  }
+
+  /* ------------------------------------------- 1b. PRICE SYNC (CONFIG → page)
+     One source of truth: change CONFIG.price / oldPrice / packLabel and every
+     price, badge and savings line on the page updates itself.               */
+  (function priceSync() {
+    var money    = function (n) { return n + ' ' + CONFIG.currency; };
+    var discount = Math.round((1 - CONFIG.price / CONFIG.oldPrice) * 100);
+    var savings  = CONFIG.oldPrice - CONFIG.price;
+
+    $$('[data-price]').forEach(function (el) { el.textContent = String(CONFIG.price); });
+    $$('[data-old-price]').forEach(function (el) { el.textContent = money(CONFIG.oldPrice); });
+    $$('.js-price').forEach(function (el) { el.textContent = money(CONFIG.price); });
+    $$('[data-discount]').forEach(function (el) { el.textContent = 'خصم ' + discount + '%'; });
+    $$('[data-discount-short]').forEach(function (el) { el.textContent = discount + '%'; });
+    $$('[data-save]').forEach(function (el) { el.textContent = 'كتوفر ' + money(savings); });
+    $$('[data-pack]').forEach(function (el) { el.textContent = CONFIG.packLabel; });
+  })();
+
+  /* ------------------------------------------------------- 2. SCROLL REVEAL */
+  (function reveal() {
+    var items = $$('.reveal');
+    if (!items.length) return;
+
+    if (!('IntersectionObserver' in window) || CONFIG.reduceMotion) {
+      items.forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);          // animate once, then stop watching
+        }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+
+    items.forEach(function (el) { io.observe(el); });
+  })();
+
+  /* -------------------------------------------------- 3. SMOOTH SCROLL CTAs */
+  (function smoothScroll() {
+    $$('[data-scroll]').forEach(function (trigger) {
+      trigger.addEventListener('click', function (event) {
+        var target = $(trigger.getAttribute('data-scroll'));
+        if (!target) return;
+        event.preventDefault();
+
+        target.scrollIntoView({
+          behavior: CONFIG.reduceMotion ? 'auto' : 'smooth',
+          block: 'start'
+        });
+
+        // Move focus to the first field for keyboard/screen-reader users
+        window.setTimeout(function () {
+          var form = $('#order-form');
+          var firstField = $('#f-name');
+          var formVisible = form && getComputedStyle(form).display !== 'none';
+          if (formVisible && firstField) firstField.focus({ preventScroll: true });
+        }, CONFIG.reduceMotion ? 0 : 700);
+      });
+    });
+  })();
+
+  /* --------------------------------------------------- 4. SCARCITY COUNTER */
+  (function scarcity() {
+    var out   = $('#stock');
+    var bar   = $('#stockbar');
+    var stock = CONFIG.stock;
+    if (!out) return;
+
+    var left = stock.start;
+
+    function paint() {
+      out.textContent = left;
+      if (bar) {
+        // progress = how much of the initial stock is gone
+        var remainingPct = Math.max(6, Math.round((left / stock.start) * 100));
+        bar.style.width = remainingPct + '%';
+      }
+    }
+
+    function drop() {
+      if (left <= stock.min) return;
+      left -= 1;
+      paint();
+      out.classList.remove('bump');
+      void out.offsetWidth;            // restart the CSS animation
+      out.classList.add('bump');
+
+      var next = stock.every[0] + Math.random() * (stock.every[1] - stock.every[0]);
+      window.setTimeout(drop, next);
+    }
+
+    paint();
+    window.setTimeout(drop, stock.firstDelay);
+  })();
+
+  /* ---------------------------------------------- 5. COUNTDOWN TO MIDNIGHT */
+  (function countdown() {
+    var h = $('#cd-h'), m = $('#cd-m'), s = $('#cd-s');
+    if (!h || !m || !s) return;
+
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+
+    function tick() {
+      var now      = new Date();
+      var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      var diff     = Math.max(0, midnight - now);
+
+      var hours = Math.floor(diff / 3.6e6);
+      var mins  = Math.floor((diff % 3.6e6) / 6e4);
+      var secs  = Math.floor((diff % 6e4) / 1000);
+
+      h.textContent = pad(hours);
+      m.textContent = pad(mins);
+      s.textContent = pad(secs);
+    }
+
+    tick();
+    window.setInterval(tick, 1000);
+  })();
+
+  /* ---------------------------------------------------- 6. FAQ ACCORDION */
+  (function faq() {
+    var items = $$('#faq details');
+    items.forEach(function (item) {
+      item.addEventListener('toggle', function () {
+        if (!item.open) return;
+        // close the other panels (classic accordion behaviour)
+        items.forEach(function (other) {
+          if (other !== item) other.open = false;
+        });
+      });
+    });
+  })();
+
+  /* ------------------------------------------- 7. STICKY BAR VISIBILITY */
+  (function stickyBar() {
+    var order = $('#order');
+    if (!order || !('IntersectionObserver' in window)) return;
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        document.body.classList.toggle('is-order-visible', entry.isIntersecting);
+      });
+    }, { threshold: 0.25 });
+
+    io.observe(order);
+  })();
+
+  /* ------------------------------------------------------ 8. ORDER FORM */
+  (function orderForm() {
+    var form      = $('#order-form');
+    var success   = $('#success');
+    var waButton  = $('#success-wa');
+    if (!form || !success) return;
+
+    var fields = {
+      name:  { el: $('#f-name'),  err: $('#e-name')  },
+      phone: { el: $('#f-phone'), err: $('#e-phone') },
+      city:  { el: $('#f-city'),  err: $('#e-city')  }
+    };
+
+    var MOROCCAN_PHONE = /^(?:\+?212|00212|0)([5-7]\d{8})$/;   // 06/07/05 + 8 digits
+
+    function setError(field, message) {
+      field.err.textContent = message || '';
+      field.err.classList.toggle('show', Boolean(message));
+      field.el.setAttribute('aria-invalid', message ? 'true' : 'false');
+      return !message;
+    }
+
+    function validate() {
+      var ok = true;
+
+      var name = fields.name.el.value.trim();
+      if (!name)               ok = setError(fields.name, 'عافاك دخل الاسم الكامل.') && ok;
+      else if (name.length < 3) ok = setError(fields.name, 'الاسم قصير بزاف — دخل الاسم الكامل.') && ok;
+      else                      setError(fields.name, '');
+
+      var digits = fields.phone.el.value.replace(/[\s\-().]/g, '');
+      if (!digits)                       ok = setError(fields.phone, 'عافاك دخل رقم الهاتف.') && ok;
+      else if (!MOROCCAN_PHONE.test(digits)) ok = setError(fields.phone, 'الرقم ماشي صحيح — مثال: 0612345678') && ok;
+      else                               setError(fields.phone, '');
+
+      var city = fields.city.el.value.trim();
+      if (!city) ok = setError(fields.city, 'عافاك دخل المدينة.') && ok;
+      else       setError(fields.city, '');
+
+      return ok;
+    }
+
+    // Live cleanup: keep the phone field digits-friendly
+    fields.phone.el.addEventListener('input', function () {
+      this.value = this.value.replace(/[^\d+\s\-().]/g, '');
+    });
+    // Re-validate a field as soon as the user fixes it
+    Object.keys(fields).forEach(function (key) {
+      fields[key].el.addEventListener('input', function () {
+        if (fields[key].err.classList.contains('show')) validate();
+      });
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!validate()) {
+        var firstBad = form.querySelector('[aria-invalid="true"]');
+        if (firstBad) firstBad.focus();
+        return;
+      }
+
+      var data = {
+        name:  fields.name.el.value.trim(),
+        phone: fields.phone.el.value.trim(),
+        city:  fields.city.el.value.trim()
+      };
+
+      // --- Recap -------------------------------------------------------------
+      $('#r-name').textContent  = data.name;
+      $('#r-phone').textContent = data.phone;
+      $('#r-city').textContent  = data.city;
+
+      // --- WhatsApp handoff with a pre-filled order message -------------------
+      var message =
+        'سلام! بغيت نأكد الطلب ديالي 👇\n' +
+        '• المنتج: IBS+ كريم وجع المفاصل\n' +
+        '• الاسم: ' + data.name + '\n' +
+        '• الهاتف: ' + data.phone + '\n' +
+        '• المدينة: ' + data.city + '\n' +
+        '• العرض: ' + CONFIG.packLabel + '\n' +
+        '• الثمن: ' + CONFIG.price + ' ' + CONFIG.currency + ' (الخلص عند التوصيل)';
+      waButton.href = waLink(message);
+
+      // --- Swap the form for the success panel --------------------------------
+      form.style.display = 'none';
+      success.classList.add('show');
+      success.scrollIntoView({ behavior: CONFIG.reduceMotion ? 'auto' : 'smooth', block: 'center' });
+      waButton.focus({ preventScroll: true });
+
+      /* ---------------------------------------------------------------------
+         Where to send the order? Drop your endpoint here, e.g.
+         fetch('https://api.example.com/orders', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(data)
+         });
+         --------------------------------------------------------------------- */
+      console.info('[IBS+] طلب جديد:', data);
+    });
+
+    // "Back to the form" link in the success panel
+    var edit = $('#edit-order');
+    if (edit) {
+      edit.addEventListener('click', function (event) {
+        event.preventDefault();
+        success.classList.remove('show');
+        form.style.display = '';
+        fields.name.el.focus();
+      });
+    }
+  })();
+
+  /* --------------------------------------- 9. GLOBAL LINKS + FOOTER YEAR */
+  (function misc() {
+    // Fill every WhatsApp link (FAB, footer, success button) from CONFIG
+    $$('.js-wa').forEach(function (link) {
+      link.href = waLink('سلام! بغيت معلومات على كريم IBS+ لوجع المفاصل 🙏');
+    });
+
+    // Phone link: only rewritten once a real (digits-only) number is configured
+    var tel = $('#support-phone');
+    if (tel && /^\d{9,15}$/.test(CONFIG.whatsappNumber)) {
+      tel.href = 'tel:+' + CONFIG.whatsappNumber;
+      tel.textContent = '+' + CONFIG.whatsappNumber;
+    }
+
+    var year = $('#year');
+    if (year) year.textContent = new Date().getFullYear();
+  })();
+
+})();
+</script>
+
+</body>
+</html>
