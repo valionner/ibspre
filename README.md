@@ -16,6 +16,19 @@ dependency at runtime: `index.html` is the entire site.
 python3 -m http.server 8000        # → http://localhost:8000
 ```
 
+## 🖼️ Swapping in a real packshot
+
+Drop the real product photo in with one command — it trims the empty border (for
+background-removed PNGs), converts to WebP **keeping transparency**, and rewrites the
+`width`/`height` attributes of both product `<img>` tags so nothing shifts on load:
+
+```bash
+tools/import-product-image.sh ~/Downloads/packshot.png          # transparent PNG / cut-out
+tools/import-product-image.sh ~/Downloads/packshot.jpg --no-trim # photo with its own background
+```
+
+It always writes `assets/img/product-tube.webp`, i.e. the path the page already uses.
+
 ## 📁 Project structure
 
 ```
@@ -119,8 +132,10 @@ The tests load the real `index.html` in jsdom — a broken selector or a runtime
 * **Typo flagged:** the trust-bar item «الخلص عند التوصيل — **344 يوم**» was kept verbatim from
   the brief (marked with an HTML comment in `index.html`) — change it if it was meant to read
   something else.
-* **Images** are AI-generated placeholders. Replace the files in `assets/img/` **keeping the same
-  names** for a drop-in swap (keep the cream background of the packshot so it blends with its tile).
+* **Images** — the current packshot and lifestyle photos are AI-generated placeholders. Replace
+  the files in `assets/img/` **keeping the same names** for a drop-in swap, or use
+  `tools/import-product-image.sh` for the product shot (see above). For a cut-out with
+  transparency, keep the page's cream tile behind it (it doubles as the studio background).
 * **Legal:** the product is marketed as a natural cosmetic/wellness product; the footer carries a
   “not a substitute for medical advice” disclaimer. Add your ONSSA/authorisation references and
   local regulatory text before running paid traffic.
