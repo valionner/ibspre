@@ -1,0 +1,14 @@
+{
+  "name": "ibspre-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IBS+ Crème Douleurs Articulaires — single-page Arabic (RTL) COD landing page. No build step: index.html is the whole site.",
+  "scripts": {
+    "test": "node test/landing.test.js",
+    "serve": "python3 -m http.server 8000 --bind 0.0.0.0"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.2"
+  },
+  "license": "UNLICENSED"
+}
