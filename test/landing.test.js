@@ -34,7 +34,13 @@ const group = (title) => console.log('\n' + title);
 /* ------------------------------------------------------------ boot jsdom */
 const runtimeErrors = [];
 const virtualConsole = new VirtualConsole();
-virtualConsole.on('jsdomError', (e) => runtimeErrors.push('jsdomError: ' + e.message));
+// jsdom cannot navigate: the thank-you redirect shows up as a "navigation" error.
+// Count those instead of treating them as failures.
+let navigationAttempts = 0;
+virtualConsole.on('jsdomError', (e) => {
+  if (/navigation/i.test(e.message)) navigationAttempts++;
+  else runtimeErrors.push('jsdomError: ' + e.message);
+});
 virtualConsole.on('error', (...args) => runtimeErrors.push('console.error: ' + args.join(' ')));
 
 const dom = new JSDOM(html, {
@@ -73,9 +79,8 @@ group('WhatsApp / phone wiring');
 const fab = $('.wa-fab');
 ok('floating WhatsApp button builds a wa.me link', /^https:\/\/wa\.me\/212/.test(fab.href), fab.href.slice(0, 52) + '…');
 ok('floating button carries a pre-filled message', fab.href.includes('text='));
-ok('footer WhatsApp link filled from CONFIG', $('.footer .js-wa').href.startsWith('https://wa.me/'));
-ok('phone link left alone while the number is a placeholder',
-  $('#support-phone').href === 'tel:+212600000000');
+ok('support WhatsApp + phone links removed from the footer',
+  !$('#support-phone') && $$('.footer .js-wa').length === 0);
 
 /* --------------------------------------------------------- 3. price sync */
 group('Price sync (CONFIG → page)');
@@ -87,7 +92,7 @@ ok('crossed-out prices filled', all('[data-old-price]').every((el) => el.textCon
 ok('discount badges computed (54%)', all('[data-discount]').every((el) => el.textContent === 'خصم 54%'));
 ok('savings line computed (كتوفر 270 درهم)',
   all('[data-save]').every((el) => el.textContent === 'كتوفر 270 درهم'));
-ok('pack label injected', $('[data-pack]').textContent === 'عرض 2+1 مجاني');
+ok('2+1 bonus line removed from the offer box', !$('[data-pack]') && !$('.offer__bonus'));
 ok('sticky bar price synced', $('.stickybar .js-price').textContent === '229 درهم');
 
 /* ------------------------------------------------------ 4. urgency widgets */
@@ -115,60 +120,117 @@ click($('[data-scroll="#order"]'));
 ok('CTA scrolls to the order section', $('#order').dataset.scrolled === '1');
 
 /* -------------------------------------------------------- 6. order form */
-group('Order form — validation');
-$('#f-phone').value = '12345';
-$('#f-name').value = '';
-submit();
-ok('invalid submit is blocked', !$('#success').classList.contains('show'));
-ok('name error message shown', $('#e-name').classList.contains('show'), $('#e-name').textContent);
-ok('phone error message shown', $('#e-phone').classList.contains('show'), $('#e-phone').textContent);
-ok('aria-invalid="true" set on the bad field', $('#f-name').getAttribute('aria-invalid') === 'true');
+// Orders are POSTed to the Apps Script endpoint. Stub fetch: jsdom has none.
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+const posts = [];
+let nextReply = { ok: true };
+let failNextPost = false;
+window.fetch = (url, opts) => {
+  posts.push({ url, opts: opts || {} });
+  if (failNextPost) {
+    failNextPost = false;
+    return Promise.reject(new TypeError('Failed to fetch'));
+  }
+  return Promise.resolve({ json: () => Promise.resolve(nextReply) });
+};
+const sentParams = (post) => Object.fromEntries(new URLSearchParams(post.opts.body));
+const fill = (name, phone, city, addr) => {
+  $('#f-name').value = name;
+  $('#f-phone').value = phone;
+  $('#f-city').value = city;
+  $('#f-addr').value = addr;
+};
+const noticeText = () => $('#order-form .err[role="alert"]:not(#e-name):not(#e-phone):not(#e-city):not(#e-addr)').textContent;
+const SHEET_URL = (html.match(/sheetUrl:\s*'([^']+)'/) || [])[1];
 
-group('Order form — Moroccan phone numbers');
-[
-  ['0612345678', true],
-  ['+212612345678', true],
-  ['00212612345678', true],
-  ['0712345678', true],
-  ['061234567', false],
-  ['0012345678', false],
-  ['abcdefghij', false]
-].forEach(([number, shouldPass]) => {
-  $('#f-name').value = 'محمد';
-  $('#f-phone').value = number;
-  $('#f-city').value = 'مراكش';
+(async () => {
+  // The CTA handler moves focus after a short delay (see section 5)
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  ok('focus moved to the first field after a CTA click', document.activeElement && document.activeElement.id === 'f-name', document.activeElement && document.activeElement.id);
+
+  group('Order form — validation');
+  fill('', '12345', '', '');
   submit();
-  const accepted = $('#success').classList.contains('show');
-  ok('"' + number + '" ' + (shouldPass ? 'accepted' : 'rejected'), accepted === shouldPass);
-  if (accepted) click($('#edit-order'));
-});
+  await tick();
+  ok('invalid submit is blocked (nothing sent)', posts.length === 0);
+  ok('name error message shown', $('#e-name').classList.contains('show'), $('#e-name').textContent);
+  ok('phone error message shown', $('#e-phone').classList.contains('show'), $('#e-phone').textContent);
+  ok('address error message shown', $('#e-addr').classList.contains('show'), $('#e-addr').textContent);
+  ok('aria-invalid="true" set on the bad field', $('#f-name').getAttribute('aria-invalid') === 'true');
 
-group('Order form — successful order');
-$('#f-name').value = 'خديجة العلمي';
-$('#f-phone').value = '06 12 34 56 78';
-$('#f-city').value = 'طنجة';
-submit();
-ok('success panel is shown', $('#success').classList.contains('show'));
-ok('form is hidden', $('#order-form').style.display === 'none');
-ok('recap name', $('#r-name').textContent === 'خديجة العلمي');
-ok('recap phone', $('#r-phone').textContent === '06 12 34 56 78');
-ok('recap city', $('#r-city').textContent === 'طنجة');
-const waOrder = decodeURIComponent($('#success-wa').href);
-ok('order recap is pushed to WhatsApp with the price',
-  waOrder.startsWith('https://wa.me/') && waOrder.includes('خديجة العلمي') && waOrder.includes('229'));
+  group('Order form — Moroccan phone numbers');
+  for (const [number, shouldPass] of [
+    ['0612345678', true], ['+212612345678', true], ['00212612345678', true], ['0712345678', true],
+    ['061234567', false], ['0012345678', false], ['abcdefghij', false]
+  ]) {
+    const before = posts.length;
+    fill('محمد', number, 'مراكش', 'حي المسيرة، زنقة 5');
+    submit();
+    await tick();
+    const accepted = posts.length === before + 1;
+    ok('"' + number + '" ' + (shouldPass ? 'accepted' : 'rejected'), accepted === shouldPass);
+  }
 
-group('Order form — back to edit');
-click($('#edit-order'));
-ok('form is restored', !$('#success').classList.contains('show') && $('#order-form').style.display === '');
+  group('Order form — successful order');
+  posts.length = 0;
+  navigationAttempts = 0;
+  fill('خديجة العلمي', '06 12 34 56 78', 'طنجة', 'حي بني مكادة، زنقة 3، رقم 7');
+  submit();
+  await tick();
+  ok('one POST sent', posts.length === 1, posts.length + ' request(s)');
+  ok('POST goes to CONFIG.sheetUrl (Apps Script Web App)', posts[0] && posts[0].url === SHEET_URL, SHEET_URL);
+  ok('POST is form-encoded (no CORS preflight)', posts[0] && posts[0].opts.method === 'POST' && !posts[0].opts.headers);
+  const p = sentParams(posts[0]);
+  ok('name / phone / city / address sent', p.name === 'خديجة العلمي' && p.phone === '06 12 34 56 78' && p.city === 'طنجة' && p.addr === 'حي بني مكادة، زنقة 3، رقم 7');
+  ok('offer / qty / total / currency sent', p.offer === 'عرض 2+1 مجاني' && p.qty === '1' && p.total === '229' && p.currency === 'درهم', JSON.stringify([p.offer, p.qty, p.total, p.currency]));
+  ok('honeypot "website" sent empty', p.website === '');
+  ok('page URL sent', p.page === 'http://localhost:8000/index.html');
+  ok('redirect to thank-you page attempted', navigationAttempts === 1, navigationAttempts + ' attempt(s)');
 
-/* ------------------------------------------------------------ final checks */
-setTimeout(() => {
+  group('Order form — server responses');
+  nextReply = { ok: false, duplicate: true, error: 'Duplicate order' };
+  navigationAttempts = 0;
+  submit();
+  await tick();
+  ok('duplicate order: message shown, no redirect', /تسجل دابا/.test(noticeText()) && navigationAttempts === 0, noticeText());
+  ok('duplicate order: button re-enabled', $('#order-form button[type="submit"]').disabled === false);
+
+  nextReply = { ok: false, error: 'boom' };
+  submit();
+  await tick();
+  ok('server error: message shown, no redirect', /وقع مشكل/.test(noticeText()) && navigationAttempts === 0);
+
+  group('Order form — network failure fallback');
+  nextReply = { ok: true };
+  failNextPost = true;
+  posts.length = 0;
+  submit();
+  await tick();
+  ok('falls back to a no-cors resend', posts.length === 2 && posts[1].opts.mode === 'no-cors', posts.length + ' request(s)');
+  ok('fallback still redirects to thank-you', navigationAttempts === 1);
+
+  group('Order form — honeypot');
+  const hp = $('input[name="website"]');
+  ok('honeypot input exists inside a hidden wrapper', Boolean(hp) && Boolean(hp.closest('.hp')) && hp.tabIndex === -1);
+  hp.value = 'http://spam.example';
+  posts.length = 0;
+  fill('محمد', '0612345678', 'مراكش', 'حي المسيرة، زنقة 5');
+  submit();
+  await tick();
+  ok('filled honeypot is forwarded for the server to reject', sentParams(posts[0]).website === 'http://spam.example');
+
+  group('Thank-you page');
+  const tyPath = path.join(__dirname, '..', 'thank-you.html');
+  const ty = fs.existsSync(tyPath) ? fs.readFileSync(tyPath, 'utf8') : '';
+  ok('thank-you.html exists', ty.length > 0);
+  ok('thank-you page is RTL Arabic and not indexed', /dir="rtl"/.test(ty) && /lang="ar"/.test(ty) && /noindex/.test(ty));
+  ok('thank-you page greets using ?name=', /URLSearchParams/.test(ty) && /get\('name'\)/.test(ty));
+  ok('thank-you page links back to the landing page', /href="index\.html"/.test(ty));
+
+  /* ------------------------------------------------------------ final checks */
   group('Runtime health');
-  ok('focus moved to the first field after a CTA click',
-    document.activeElement && document.activeElement.id === 'f-name',
-    document.activeElement && document.activeElement.id);
   ok('no uncaught runtime errors', runtimeErrors.length === 0, runtimeErrors.join(' | ') || 'clean');
 
   console.log('\n' + (failed ? '✗ ' : '✓ ') + passed + ' passed, ' + failed + ' failed\n');
   process.exit(failed ? 1 : 0);
-}, 900);
+})();

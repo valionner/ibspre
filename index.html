@@ -549,6 +549,7 @@ button{font:inherit}
 }
 .form__summary b{color:var(--green);font-family:var(--font-head);font-size:1.05rem}
 .form__legal{text-align:center;color:var(--muted);font-size:.74rem;margin:12px 0 0}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .success{
   display:none;text-align:center;padding:8px 4px;
 }
@@ -1041,7 +1042,6 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
             <p class="new"><b data-price>229</b><span> درهم</span></p>
             <span class="badge-off badge-off--inline" data-discount>خصم 54%</span>
             <p class="offer__save" data-save>كتوفر 270 درهم</p>
-            <p class="offer__bonus">🎉 <span data-pack>عرض 2+1 مجاني</span> — كريمين + واحد مجاني</p>
           </div>
         </div>
 
@@ -1109,6 +1109,19 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
             <p class="err" id="e-city" role="alert"></p>
           </div>
 
+          <div class="field">
+            <label for="f-addr">العنوان الكامل <span class="hint">(فين غادي نوصلو السلعة)</span></label>
+            <textarea id="f-addr" name="addr" rows="2" autocomplete="street-address"
+                      placeholder="مثال: حي المسيرة، زنقة 5، رقم 12" required
+                      aria-describedby="e-addr"></textarea>
+            <p class="err" id="e-addr" role="alert"></p>
+          </div>
+
+          <!-- Honeypot: hidden from people, bots tend to fill it in -->
+          <div class="hp" aria-hidden="true">
+            <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+          </div>
+
           <div class="form__summary">
             <span>الطلب: <b>IBS+ كريم المفاصل</b></span>
             <span>2+1 مجاني 🎁</span>
@@ -1123,27 +1136,6 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
           <p class="form__legal">🔒 المعلومات ديالك محفوظة وكنستعملوها غير لتوصيل الطلب.</p>
         </form>
 
-        <!-- SUCCESS STATE (revealed by JS after a valid submit) -->
-        <div class="success" id="success" role="status" aria-live="polite">
-          <div class="success__ic" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></div>
-          <h3>🎉 مبروك! تسجّل الطلب ديالك</h3>
-          <p>غادي نتصلو بيك فـ <b>24 ساعة</b> باش نأكدو التفاصيل.</p>
-
-          <div class="success__recap">
-            <div><span>الاسم</span><span id="r-name">—</span></div>
-            <div><span>الهاتف</span><span id="r-phone">—</span></div>
-            <div><span>المدينة</span><span id="r-city">—</span></div>
-            <div><span>العرض</span><span>2+1 مجاني</span></div>
-            <div><span>المجموع</span><span class="js-price">229 درهم</span></div>
-            <div><span>الخلاص</span><span>عند التوصيل</span></div>
-          </div>
-
-          <a class="btn btn--wa" id="success-wa" href="#" target="_blank" rel="noopener">
-            <svg class="ic ic--fill" aria-hidden="true"><use href="#i-wa"/></svg>
-            أكّد على WhatsApp
-          </a>
-          <p class="form__legal" style="margin-top:14px">تحتاج تبدل شي معلومة؟ <a href="#" id="edit-order" style="color:var(--green);font-weight:800">رجع للفورم</a></p>
-        </div>
       </div>
     </div>
   </section>
@@ -1255,9 +1247,6 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
     </div>
 
     <div class="footer__links">
-      <a class="js-wa" href="#" target="_blank" rel="noopener">دعم فوري على WhatsApp</a>
-      <!-- Phone digits are filled from CONFIG.whatsappNumber by the JS block -->
-      <a id="support-phone" href="tel:+212600000000" dir="ltr">+212&nbsp;6&nbsp;00&nbsp;00&nbsp;00&nbsp;00</a>
       <a href="#order">طلب دابا</a>
     </div>
 
@@ -1310,6 +1299,11 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
     // WhatsApp number in international format, digits only (no +, no spaces).
     // ⚠️ Replace the placeholder with the real business number.
     whatsappNumber: '212XXXXXXXXX',
+
+    // Google Apps Script Web App (Google Sheet "Orders" tab). Orders are POSTed here.
+    sheetUrl: 'https://script.google.com/macros/s/AKfycbxSd5B39rBw9lKRjV0XrVBH-P_lDk1loSrrILpYff6dY-lbjr55Bvi0hxM3dTmlugQy/exec',
+    // Page the visitor is sent to after a successful order
+    thankYouUrl: 'thank-you.html',
 
     price: 229,
     oldPrice: 499,
@@ -1484,15 +1478,15 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
 
   /* ------------------------------------------------------ 8. ORDER FORM */
   (function orderForm() {
-    var form      = $('#order-form');
-    var success   = $('#success');
-    var waButton  = $('#success-wa');
-    if (!form || !success) return;
+    var form = $('#order-form');
+    if (!form) return;
 
+    var submitBtn = form.querySelector('button[type="submit"]');
     var fields = {
       name:  { el: $('#f-name'),  err: $('#e-name')  },
       phone: { el: $('#f-phone'), err: $('#e-phone') },
-      city:  { el: $('#f-city'),  err: $('#e-city')  }
+      city:  { el: $('#f-city'),  err: $('#e-city')  },
+      addr:  { el: $('#f-addr'),  err: $('#e-addr')  }
     };
 
     var MOROCCAN_PHONE = /^(?:\+?212|00212|0)([5-7]\d{8})$/;   // 06/07/05 + 8 digits
@@ -1508,26 +1502,27 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
       var ok = true;
 
       var name = fields.name.el.value.trim();
-      if (!name)               ok = setError(fields.name, 'عافاك دخل الاسم الكامل.') && ok;
+      if (!name)                ok = setError(fields.name, 'عافاك دخل الاسم الكامل.') && ok;
       else if (name.length < 3) ok = setError(fields.name, 'الاسم قصير بزاف — دخل الاسم الكامل.') && ok;
       else                      setError(fields.name, '');
 
       var digits = fields.phone.el.value.replace(/[\s\-().]/g, '');
-      if (!digits)                       ok = setError(fields.phone, 'عافاك دخل رقم الهاتف.') && ok;
+      if (!digits)                           ok = setError(fields.phone, 'عافاك دخل رقم الهاتف.') && ok;
       else if (!MOROCCAN_PHONE.test(digits)) ok = setError(fields.phone, 'الرقم ماشي صحيح — مثال: 0612345678') && ok;
-      else                               setError(fields.phone, '');
+      else                                   setError(fields.phone, '');
 
       var city = fields.city.el.value.trim();
       if (!city) ok = setError(fields.city, 'عافاك دخل المدينة.') && ok;
       else       setError(fields.city, '');
 
+      var addr = fields.addr.el.value.trim();
+      if (!addr)           ok = setError(fields.addr, 'عافاك دخل العنوان.') && ok;
+      else if (addr.length < 5) ok = setError(fields.addr, 'العنوان قصير بزاف — دخل العنوان كامل.') && ok;
+      else                 setError(fields.addr, '');
+
       return ok;
     }
 
-    // Live cleanup: keep the phone field digits-friendly
-    fields.phone.el.addEventListener('input', function () {
-      this.value = this.value.replace(/[^\d+\s\-().]/g, '');
-    });
     // Re-validate a field as soon as the user fixes it
     Object.keys(fields).forEach(function (key) {
       fields[key].el.addEventListener('input', function () {
@@ -1535,63 +1530,99 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
       });
     });
 
+    // Keep the phone field digits-friendly
+    fields.phone.el.addEventListener('input', function () {
+      this.value = this.value.replace(/[^\d+\s\-().]/g, '');
+    });
+
+    // Form-level message (duplicate / server error), shown above the button
+    var notice = document.createElement('p');
+    notice.className = 'err';
+    notice.setAttribute('role', 'alert');
+    notice.style.marginBottom = '12px';
+    submitBtn.parentNode.insertBefore(notice, submitBtn);
+
+    function showNotice(message) {
+      notice.textContent = message || '';
+      notice.classList.toggle('show', Boolean(message));
+    }
+
+    // UTM + page info, read once from the landing URL
+    function trackingParams() {
+      var q = new URLSearchParams(window.location.search);
+      return {
+        utm_source:   q.get('utm_source') || '',
+        utm_medium:   q.get('utm_medium') || '',
+        utm_campaign: q.get('utm_campaign') || '',
+        utm_content:  q.get('utm_content') || '',
+        page:         window.location.href.split('#')[0]
+      };
+    }
+
+    function buildPayload() {
+      var body = new URLSearchParams();
+      body.append('name',     fields.name.el.value.trim());
+      body.append('phone',    fields.phone.el.value.trim());
+      body.append('city',     fields.city.el.value.trim());
+      body.append('addr',     fields.addr.el.value.trim());
+      body.append('offer',    CONFIG.packLabel);
+      body.append('qty',      '1');
+      body.append('total',    String(CONFIG.price));
+      body.append('currency', CONFIG.currency);
+      body.append('website',  form.querySelector('input[name="website"]').value);
+      var t = trackingParams();
+      Object.keys(t).forEach(function (k) { body.append(k, t[k]); });
+      return body;
+    }
+
+    function goToThankYou(name) {
+      var url = CONFIG.thankYouUrl + '?name=' + encodeURIComponent(name);
+      window.location.href = url;
+    }
+
+    function setBusy(busy) {
+      submitBtn.disabled = busy;
+      submitBtn.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
     form.addEventListener('submit', function (event) {
       event.preventDefault();
+      showNotice('');
       if (!validate()) {
         var firstBad = form.querySelector('[aria-invalid="true"]');
         if (firstBad) firstBad.focus();
         return;
       }
 
-      var data = {
-        name:  fields.name.el.value.trim(),
-        phone: fields.phone.el.value.trim(),
-        city:  fields.city.el.value.trim()
-      };
+      var name = fields.name.el.value.trim();
+      var body = buildPayload();
+      setBusy(true);
 
-      // --- Recap -------------------------------------------------------------
-      $('#r-name').textContent  = data.name;
-      $('#r-phone').textContent = data.phone;
-      $('#r-city').textContent  = data.city;
-
-      // --- WhatsApp handoff with a pre-filled order message -------------------
-      var message =
-        'سلام! بغيت نأكد الطلب ديالي 👇\n' +
-        '• المنتج: IBS+ كريم وجع المفاصل\n' +
-        '• الاسم: ' + data.name + '\n' +
-        '• الهاتف: ' + data.phone + '\n' +
-        '• المدينة: ' + data.city + '\n' +
-        '• العرض: ' + CONFIG.packLabel + '\n' +
-        '• الثمن: ' + CONFIG.price + ' ' + CONFIG.currency + ' (الخلص عند التوصيل)';
-      waButton.href = waLink(message);
-
-      // --- Swap the form for the success panel --------------------------------
-      form.style.display = 'none';
-      success.classList.add('show');
-      success.scrollIntoView({ behavior: CONFIG.reduceMotion ? 'auto' : 'smooth', block: 'center' });
-      waButton.focus({ preventScroll: true });
-
-      /* ---------------------------------------------------------------------
-         Where to send the order? Drop your endpoint here, e.g.
-         fetch('https://api.example.com/orders', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify(data)
-         });
-         --------------------------------------------------------------------- */
-      console.info('[IBS+] طلب جديد:', data);
+      fetch(CONFIG.sheetUrl, { method: 'POST', body: body })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.duplicate) {
+            setBusy(false);
+            showNotice('الطلب ديالك تسجل دابا — ما خاصكش تصيفط مرة أخرى.');
+            return;
+          }
+          if (data && data.ok === false) {
+            setBusy(false);
+            showNotice('وقع مشكل فالتسجيل — عاود المحاولة من فضلك.');
+            return;
+          }
+          goToThankYou(name);
+        }, function () {
+          // Browser blocked the response (CORS) or the network failed.
+          // Send once more without reading the reply; the sheet's duplicate
+          // check protects against double orders.
+          fetch(CONFIG.sheetUrl, { method: 'POST', mode: 'no-cors', body: body })
+            .then(function () { goToThankYou(name); }, function () {
+              setBusy(false);
+              showNotice('ما قدرناش نسجلو الطلب — تأكد من الاتصال وعاود المحاولة.');
+            });
+        });
     });
-
-    // "Back to the form" link in the success panel
-    var edit = $('#edit-order');
-    if (edit) {
-      edit.addEventListener('click', function (event) {
-        event.preventDefault();
-        success.classList.remove('show');
-        form.style.display = '';
-        fields.name.el.focus();
-      });
-    }
   })();
 
   /* --------------------------------------- 9. GLOBAL LINKS + FOOTER YEAR */
@@ -1600,13 +1631,6 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
     $$('.js-wa').forEach(function (link) {
       link.href = waLink('سلام! بغيت معلومات على كريم IBS+ لوجع المفاصل 🙏');
     });
-
-    // Phone link: only rewritten once a real (digits-only) number is configured
-    var tel = $('#support-phone');
-    if (tel && /^\d{9,15}$/.test(CONFIG.whatsappNumber)) {
-      tel.href = 'tel:+' + CONFIG.whatsappNumber;
-      tel.textContent = '+' + CONFIG.whatsappNumber;
-    }
 
     var year = $('#year');
     if (year) year.textContent = new Date().getFullYear();

@@ -34,6 +34,7 @@ It always writes `assets/img/product-tube.webp`, i.e. the path the page already 
 ```
 .
 ├── index.html          # the whole landing page (markup + embedded CSS + JS)
+├── thank-you.html     # shown after a successful order (redirect target)
 ├── assets/img/         # WebP images (product, pain points, avatars) — 152 KB total
 │   ├── product-tube.webp   (800×1679, product packshot, cream background)
 │   ├── pain-1..3.webp      (480×480, pain-point thumbnails)
@@ -53,10 +54,10 @@ It always writes `assets/img/product-tube.webp`, i.e. the path the page already 
 | 4 | Solution | 3 benefit rows (🔥 ⬇️ 🌿) + ingredient pills (غلوكوزامين، أرنيكا، LSSM، فلفل حار) |
 | 5 | Testimonials | خديجة (طنجة), محمد (مراكش), فاطمة (الدار البيضاء) + ✅ زبون حقيقي |
 | 6 | Special offer | «عرض خاص — غير اليوم»: countdown, price, checklist, CTA, scarcity bar «باقي غير 47 كمية» |
-| 7 | Order form | الاسم الكامل · رقم الهاتف · المدينة → «تأكيد الطلب» + WhatsApp handoff |
+| 7 | Order form | الاسم الكامل · رقم الهاتف · المدينة · العنوان → «تأكيد الطلب» → POST to Google Sheet → redirect to `thank-you.html` |
 | 8 | FAQ | 6 accordion Q&A (2-column grid on desktop) |
 | 9 | Final CTA | Dark-green block, 229 درهم price, gold button |
-| 10 | Footer | Brand, ONSSA badge, WhatsApp support, legal note |
+| 10 | Footer | Brand, ONSSA badge, legal note |
 
 ## ⚙️ Configuration — one place to edit
 
@@ -74,9 +75,13 @@ var CONFIG = {
 };
 ```
 
-* **WhatsApp number** — drive the floating button, the footer link and the post-order
-  “أكّد على WhatsApp” button. The footer phone link rewrites itself only once a real
-  9–15 digit number is configured (the `212XXXXXXXXX` placeholder is left untouched).
+* **WhatsApp number** — drives the floating WhatsApp button only.
+* **Order endpoint** — `sheetUrl` is the Google Apps Script Web App URL. Each order is POSTed
+  there and written to the `Orders` tab of the Google Sheet. The script (deployed as a Web App,
+  *Execute as: Me*, *Who has access: Anyone*) is kept in the Google Sheet itself; the page only
+  needs this URL. If you redeploy the script, you get a new URL: paste it into `sheetUrl`.
+* **Thank-you page** — `thankYouUrl` points to `thank-you.html`, which the visitor sees after a
+  successful order. It shows the first name from `?name=` and has no order data in it.
 * **Prices** — `price`, `oldPrice`, `currency` and `packLabel` are pushed into every price,
   badge, savings line and pack mention on page load, and the discount percentage and the
   savings amount are **computed** (`خصم 54%`, `كتوفر 270 درهم`). Nothing else to edit —
