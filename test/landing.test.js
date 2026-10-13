@@ -92,7 +92,7 @@ ok('crossed-out prices filled', all('[data-old-price]').every((el) => el.textCon
 ok('discount badges computed (54%)', all('[data-discount]').every((el) => el.textContent === 'خصم 54%'));
 ok('savings line computed (كتوفر 270 درهم)',
   all('[data-save]').every((el) => el.textContent === 'كتوفر 270 درهم'));
-ok('pack label injected', $('[data-pack]').textContent === 'عرض 2+1 مجاني');
+ok('2+1 bonus line removed from the offer box', !$('[data-pack]') && !$('.offer__bonus'));
 ok('sticky bar price synced', $('.stickybar .js-price').textContent === '229 درهم');
 
 /* ------------------------------------------------------ 4. urgency widgets */
