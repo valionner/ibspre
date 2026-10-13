@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#2D6A4F">
+<title>شكرا على الطلب — IBS+</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232D6A4F'/%3E%3Ctext x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle'%3EIBS+%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#2D6A4F;--green-700:#1B5E37;--green-900:#0F2A22;--heading:#1A3C34;--muted:#666;--bg:#F4F8F5}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{font-family:'Tajawal',system-ui,sans-serif;background:var(--bg);color:#222;display:grid;place-items:center;min-height:100vh;padding:20px}
+  .card{background:#fff;border-radius:20px;box-shadow:0 10px 30px rgba(15,42,34,.12);max-width:480px;width:100%;padding:36px 28px;text-align:center}
+  .ic{width:84px;height:84px;margin:0 auto 18px;border-radius:50%;background:var(--green);display:grid;place-items:center}
+  .ic svg{width:42px;height:42px;stroke:#fff;stroke-width:3;fill:none}
+  h1{font-family:'Cairo',sans-serif;font-weight:900;color:var(--heading);font-size:1.6rem;margin:0 0 10px}
+  p{margin:8px 0;line-height:1.7}
+  .steps{list-style:none;padding:0;margin:22px 0;text-align:right;display:grid;gap:10px}
+  .steps li{background:var(--bg);border-radius:12px;padding:12px 14px;font-weight:700;color:var(--heading)}
+  .steps li::before{content:"✅ ";}
+  .btn{display:inline-block;margin-top:10px;background:linear-gradient(180deg,var(--green),var(--green-700));color:#fff;text-decoration:none;font-family:'Cairo',sans-serif;font-weight:900;padding:14px 26px;border-radius:999px;box-shadow:0 6px 16px rgba(45,106,79,.35)}
+  .btn:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .note{color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+  <main class="card" id="thanks">
+    <div class="ic" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+    </div>
+    <h1 id="ty-title">شكرا على الطلب ديالك! 🎉</h1>
+    <p id="ty-greeting">الطلب ديالك تسجل بنجاح.</p>
+    <ul class="steps">
+      <li>غادي نتصلو بيك فـ 24 ساعة باش نأكدو الطلب</li>
+      <li>التوصيل فـ 24-48 ساعة</li>
+      <li>كتخلص ملي توصلك السلعة (الخلص عند التوصيل)</li>
+    </ul>
+    <p class="note">إلا عندك أي سؤال، تقدر تتصل بنا فأي وقت.</p>
+    <a class="btn" href="index.html">الرجوع للصفحة الرئيسية</a>
+  </main>
+
+  <script>
+    (function () {
+      // Name is passed by the order form as ?name=... (first name only is shown)
+      var name = new URLSearchParams(window.location.search).get('name') || '';
+      name = name.trim().split(/\s+/)[0] || '';
+      if (name) {
+        document.getElementById('ty-title').textContent = 'شكرا ' + name + '! 🎉';
+      }
+    })();
+  </script>
+</body>
+</html>
