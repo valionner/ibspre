@@ -346,7 +346,14 @@ button{font:inherit}
   width:min(300px,80%);height:9px;
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8c46-7 96-8 148-4 50 4 100 2 148-4' fill='none' stroke='%23E88C2A' stroke-width='3' stroke-linecap='round' opacity='.55'/%3E%3C/svg%3E") no-repeat center/100% 100%;
 }
-@media (min-width:1024px){ .pain{grid-template-columns:repeat(3,1fr)} .pain__card{flex-direction:column;text-align:center;gap:10px;padding:20px 16px} .pain__thumb{width:86px;height:86px;border-radius:50%} .pain__text{font-size:.98rem} .pain__x{order:-1} }
+@media (min-width:1024px){
+  .pain{grid-template-columns:repeat(3,1fr)}
+  .pain__card{flex-direction:column;text-align:center;gap:10px;padding:20px 16px}
+  /* stacked card: ❌ badge on top, then the photo, then the text */
+  .pain__x{order:-2}
+  .pain__thumb{order:-1;width:86px;height:86px;border-radius:50%}
+  .pain__text{font-size:.98rem}
+}
 
 /* ==========================================================================
    7. SECTION 4 — SOLUTION
@@ -821,7 +828,6 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
       <div class="pain">
         <!-- Card 1 -->
         <article class="pain__card reveal">
-          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
           <p class="pain__text">
             ما كتقدرش تسجدي بلا وجع
             <small>الركبة كتوجع فالسجود والقيام</small>
@@ -830,11 +836,11 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
             <img src="assets/img/pain-1.webp" width="480" height="480" loading="lazy" decoding="async"
                  alt="مرأة كتصلي وكتشد ركبتها من الوجع">
           </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
         </article>
 
         <!-- Card 2 -->
         <article class="pain__card reveal d1">
-          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
           <p class="pain__text">
             ما كتقدرش تلعبي مع ولادك
             <small>كتتفرجي عليهم بدل ما تلعبي معاهم</small>
@@ -843,11 +849,11 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
             <img src="assets/img/pain-2.webp" width="480" height="480" loading="lazy" decoding="async"
                  alt="أم كتحاول تلعب مع ولادها وكتحس بوجع الظهر">
           </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
         </article>
 
         <!-- Card 3 -->
         <article class="pain__card reveal d2">
-          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
           <p class="pain__text">
             كل نهار كتعاني — حتى مع الدوا
             <small>الحبوب كتسكّت الوجع شوية وكيرجع</small>
@@ -856,6 +862,7 @@ body.is-order-visible .stickybar{transform:translateY(130%)}
             <img src="assets/img/pain-3.webp" width="480" height="480" loading="lazy" decoding="async"
                  alt="راجل تعبان حاطط الأدوية قدامه على الطبلة">
           </span>
+          <span class="pain__x" aria-hidden="true"><svg class="ic"><use href="#i-x"/></svg></span>
         </article>
       </div>
 
